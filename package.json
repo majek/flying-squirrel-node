@@ -1,0 +1,9 @@
+{
+	"name": "flying-squirrel-node",
+	"version": "0.0.1",
+        "dependencies": {
+                "yaml": "0.2.1",
+                "socket.io": "0.6.18",
+                "jquery": "1.5.1"
+        }
+}
