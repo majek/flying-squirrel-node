@@ -1,19 +1,18 @@
 var $ = require('jquery');
 
-var protocol_modules = ['./dummy'];
-
-var protocols = $.map(protocol_modules, function (protocol_module) {
-                          return require(protocol_module);
-                      });
+var protocol_modules = ['./proto-dummy', './proto-socketio'];
+var protocol_list = {};
 
 exports.start = function() {
-    $.map(protocols, function (protocol) {
-              protocol.start();
+    $.map(protocol_modules, function (protocol_module) {
+              require(protocol_module).register(protocol_list);
           });
 };
 
 exports.urls = function(token) {
-    return $.map(protocols, function (protocol) {
-                     return protocol.url(token);
+    var urls = {};
+    $.each(protocol_list, function (name, proto) {
+                     urls[name] = proto.url(token);
                  });
+    return urls;
 };

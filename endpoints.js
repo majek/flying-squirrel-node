@@ -24,9 +24,23 @@ Endpoint.prototype = {
     },
     free: function () {
         delete endpoints[this.name];
+    },
+    validate_ticket: function(ticket) {
+        return utils.validate_ticket(ticket, this.key);
     }
 };
 
+exports.get_endpoint_by_token = function(token) {
+    var e = null;
+    $.each(endpoints, function (_k, endpoint) {
+               if (endpoint.token === token) {
+                   e = endpoint;
+                   return false;
+               }
+               return true;
+           });
+    return e;
+};
 
 var app = exports.app = {};
 app.list_endpoints = function() {
@@ -87,3 +101,4 @@ app.expose_endpoint = function(req, res, data) {
 // Prepare data
 new Endpoint('test', {'recv':["sub", "a"]});
 new Endpoint('asd', {'pub':["pub", "a"]});
+
