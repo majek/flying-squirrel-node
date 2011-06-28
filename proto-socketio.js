@@ -5,9 +5,9 @@ var sys = require('sys');
 var events = require('events');
 
 var connections = require('./connections');
-
-var host = '172.16.173.128';
-var port = 8091;
+var config = require('./config');
+// config.socketio.host
+// config.socketio.port
 
 var mock_server;
 
@@ -50,7 +50,7 @@ exports.register = function(protocol_list) {
                                    res.writeHead(200, {'Content-Type': 'text/plain'});
                                    res.end('Welcome to socket.io');
                                });
-    server.listen(port, "0.0.0.0");
+    server.listen(config.socketio.port, "0.0.0.0");
     mock_server = new MockServer(server);
 };
 
@@ -62,7 +62,8 @@ var get_url = function(token) {
     io.on('connection', function (client) {
               return on_connection(client, token);
           });
-    return "http://" + host + ':' + port + '/' + token;
+    return ("http://" + config.socketio.host + ':' +
+                       config.socketio.port + '/' + token);
 };
 
 

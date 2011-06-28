@@ -55,7 +55,9 @@ exports.validate_ticket = function(ticket, key) {
 }
 
 function sha_mac(key, data) {
-    return new Buffer(crypto.createHmac('sha1', key).update(data).digest('base64'), 'base64');
+    return new Buffer(crypto .createHmac('sha1', key)
+                      .update(data)
+                      .digest('base64'), 'base64');
 }
 
 function buf_concat(a,b) {
