@@ -4,3 +4,7 @@ exports.socketio = {
     host: "127.0.0.1"
 };
 
+exports.server = {
+    port: 8090
+};
+
