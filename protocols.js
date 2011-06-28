@@ -1,6 +1,6 @@
 var $ = require('jquery');
 
-var protocol_modules = ['./proto-dummy', './proto-socketio'];
+var protocol_modules = ['./proto-socketio'];
 var protocol_list = {};
 
 exports.start = function() {

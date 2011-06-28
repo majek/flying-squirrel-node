@@ -44,7 +44,6 @@ MockServer.prototype = {
     },
     path_matches: function(req, resource) {
         var path = url.parse(req.url).pathname;
-        console.log(path, resource, path.indexOf('/' + resource) === 0);
         return (path.indexOf('/' + resource) === 0);
     }
 };
@@ -55,7 +54,6 @@ exports.register = function(protocol_list) {
     var server = http.createServer(
         function(req, res){
             if (!('x_done' in req)) {
-                console.log('xdone', req.x_done);
                 res.writeHead(200, {'Content-Type': 'text/plain'});
                 res.end('Welcome to socket.io');
             }
