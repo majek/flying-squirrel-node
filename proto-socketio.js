@@ -99,7 +99,6 @@ var on_connection = function(io, token) {
     console.log('connection');
     io.on('message', function (raw_msg) {
               var msg = JSON.parse(raw_msg);
-              console.log('frame0', msg);
               connections.open_connection(msg, token, new Protocol(io));
           });
 };

@@ -3,12 +3,13 @@ var endpoints = require('./endpoints');
 var resources = require('./resources');
 
 
-function Connection(endpoint, proto) {
+function Connection(endpoint, proto, identity) {
     var that = this;
     this.endpoint = endpoint;
     this.proto = proto;
     this.channels = {};
     this.proto.on('message', function(msg) {
+                      msg.identity = identity;
                       that.channels[msg.channel].inbound_message(msg);
                   });
 
@@ -44,9 +45,10 @@ exports.open_connection = function(msg, token, proto) {
     // TODO: handle framing errors
     var ticket = msg.connect;
     var endpoint = endpoints.get_endpoint_by_token(token);
-    if (endpoint.validate_ticket(ticket)) {
+    var identity = endpoint.validate_ticket(ticket);
+    if (identity !== false) {
         proto.send({connect: 'ok'});
-        new Connection(endpoint, proto);
+        new Connection(endpoint, proto, identity);
         return;
     } else {
         proto.send({error: "ticket invalid"});
