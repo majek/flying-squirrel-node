@@ -6,8 +6,9 @@ var events = require('events');
 
 var connections = require('./connections');
 var config = require('./config');
-// config.socketio.host
-// config.socketio.port
+// Config must provide:
+//   config.socketio.host
+//   config.socketio.port
 
 var mock_server;
 
@@ -26,19 +27,24 @@ MockServer.prototype = {
     },
     socketio_is_broken: function(resource, listener) {
         var that = this;
-        this.server.addListener('request', function(req, res) {
-                                    if (that.path_matches(req, resource)) {
-                                        listener.check(req, res);
-                                    }
-                                });
-        this.server.addListener('upgrade', function(req, res, head) {
-                                    if (that.path_matches(req, resource)) {
-                                        listener.check(req, res, true, head);
-                                    }
-                                });
+        this.server.listeners('request').unshift(
+            function(req, res) {
+                if (that.path_matches(req, resource)) {
+                    req.x_done = true;
+                    listener.check(req, res);
+                }
+            });
+        this.server.listeners('upgrade').unshift(
+            function(req, res, head) {
+                if (that.path_matches(req, resource)) {
+                    req.x_done = true;
+                    listener.check(req, res, true, head);
+                }
+            });
     },
     path_matches: function(req, resource) {
         var path = url.parse(req.url).pathname;
+        console.log(path, resource, path.indexOf('/' + resource) === 0);
         return (path.indexOf('/' + resource) === 0);
     }
 };
@@ -46,10 +52,14 @@ MockServer.prototype = {
 exports.register = function(protocol_list) {
     protocol_list['socket.io'] = {url: get_url};
 
-    var server = http.createServer(function(req, res){
-                                   res.writeHead(200, {'Content-Type': 'text/plain'});
-                                   res.end('Welcome to socket.io');
-                               });
+    var server = http.createServer(
+        function(req, res){
+            if (!('x_done' in req)) {
+                console.log('xdone', req.x_done);
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end('Welcome to socket.io');
+            }
+        });
     server.listen(config.socketio.port, "0.0.0.0");
     mock_server = new MockServer(server);
 };
