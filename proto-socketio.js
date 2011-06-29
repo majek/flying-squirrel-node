@@ -13,71 +13,62 @@ var config = require('./config');
 var mock_server;
 
 // Socket.io 0.6 doesn't handle multiple listeners. You can't listen
-// to multiple resources at a time. Let's mock up a http server
-// implementation to fix that. Ugly.
-function MockServer(server) {
-    this.server = server;
-}
-MockServer.prototype = {
-    listeners: function() {return [];},
-    addListener: function() {},
-    removeAllListeners: function() {},
-    on: function(action, fun) {
-        console.log("unsupported action ",action);
-    },
-    socketio_is_broken: function(resource, listener) {
-        var that = this;
-        this.server.listeners('request').unshift(
-            function(req, res) {
-                if (that.path_matches(req, resource)) {
-                    req.x_done = true;
-                    listener.check(req, res);
-                }
-            });
-        this.server.listeners('upgrade').unshift(
-            function(req, res, head) {
-                if (that.path_matches(req, resource)) {
-                    req.x_done = true;
-                    listener.check(req, res, true, head);
-                }
-            });
-    },
-    path_matches: function(req, resource) {
-        var path = url.parse(req.url).pathname;
-        return (path.indexOf('/' + resource) === 0);
+// to multiple resources at a time. Monkeypatch to fix it. Ugly.
+// https://github.com/LearnBoost/socket.io/blob/06/lib/socket.io/listener.js#L68
+var transports = ['websocket', 'flashsocket', 'htmlfile', 'xhr-multipart',
+                 'xhr-polling', 'jsonp-polling'];
+socketio.Listener.prototype.check = function(req, res, httpUpgrade, head){
+    var parts, cn;
+    var m = url.parse(req.url).pathname.match(/[/]([^/]*)(.*)/);
+    // Let's save resource somewhere.
+    req.token = m[1];
+
+    if (req.token) {
+        parts = m[2].slice(1).split('/');
+        if (this._serveClient(parts.join('/'), req, res)) return true;
+        if (transports.indexOf(parts[0]) === -1) return false;
+        if (parts[1]){
+            cn = this.clients[parts[1]];
+            if (cn){
+                cn._onConnect(req, res);
+            } else {
+                req.connection.end();
+                req.connection.destroy();
+                this.options.log('Couldnt find client with session id "' + parts[1] + '"');
+            }
+        } else {
+            this._onConnection(parts[0], req, res, httpUpgrade, head);
+        }
+        return true;
     }
+    return false;
 };
+
 
 exports.register = function(protocol_list) {
     protocol_list['socket.io'] = {url: get_url};
 
     var server = http.createServer(
         function(req, res){
-            if (!('x_done' in req)) {
-                res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end('Welcome to socket.io');
-            }
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end('Welcome to socket.io');
         });
-    server.listen(config.socketio.port, "0.0.0.0");
-    mock_server = new MockServer(server);
+    var io = socketio.listen(server);
+    io.on('connection', on_connection);
+    server.listen(config.socketio.port,
+                  config.socketio.listenip || "0.0.0.0");
 };
 
 var get_url = function(token) {
-    // TODO: this is quite innefficient to create a new listener for every
-    // endpoint, but there is no better way without touching socket.io.
-    var io = socketio.listen(mock_server, {resource: token});
-    mock_server.socketio_is_broken(token, io);
-    io.on('connection', function (client) {
-              return on_connection(client, token);
-          });
     return ("http://" + config.socketio.host + ':' +
-                       config.socketio.port + '/' + token);
+                        config.socketio.port + '/' + token);
 };
 
 
 function Protocol(io) {
     var that = this;
     this.io = io;
+    this.token = io.request.token;
     this.io.removeAllListeners('message');
     this.io.removeAllListeners('disconnect');
 
@@ -85,6 +76,7 @@ function Protocol(io) {
                    that.emit('message', JSON.parse(raw_msg));
                });
     this.io.on('disconnect', function () {
+                   console.log(' [-] Disonnection', that.token);
                    that.emit('disconnect');
                });
 };
@@ -102,12 +94,12 @@ Protocol.prototype.disconnect = function() {
         this.io = null;
     };
 
-
-var on_connection = function(io, token) {
-    console.log('connection');
+var on_connection = function(io) {
+    console.log(' [+] Connection  ', io.request.token);
     io.on('message', function (raw_msg) {
               var msg = JSON.parse(raw_msg);
-              connections.open_connection(msg, token, new Protocol(io));
+              connections.open_connection(msg, io.request.token,
+                                          new Protocol(io));
           });
 };
 

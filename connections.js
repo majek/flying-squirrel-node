@@ -13,7 +13,6 @@ function Connection(endpoint, proto, identity) {
                       that.channels[msg.channel].inbound_message(msg);
                   });
 
-    console.log("connect");
     $.each(endpoint.definition, function (channel_name, opts) {
                opts = opts.slice(0);
                var rtype = opts.shift();
@@ -33,7 +32,6 @@ function Connection(endpoint, proto, identity) {
                };
            });
     this.proto.on('disconnect', function() {
-                      console.log("disconnect");
                       $.each(that.channels, function (channel_name, ch) {
                                  ch.destruct();
                              });
