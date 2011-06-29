@@ -10,7 +10,7 @@ var tickets = require('./tickets');
 var config = require('./config');
 // Config must provide:
 //   config.server.port
-
+//   config.server.listenip (optional)
 
 var endpoint_path = [/[/]endpoints[/]([^/]*)[/]?$/, 'endpoint_name'];
 var ticket_path   = [/[/]endpoints[/]([^/]*)[/]tickets[/]?$/, 'endpoint_name'];
@@ -30,4 +30,5 @@ $.extend(app, tickets.app);
 
 var handler = webjs.handler(app, dispatcher);
 
-http.createServer(handler).listen(config.server.port, "0.0.0.0");
+http.createServer(handler).listen(config.server.port,
+                                  config.server.listenip || "0.0.0.0");

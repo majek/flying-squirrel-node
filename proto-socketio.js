@@ -9,8 +9,7 @@ var config = require('./config');
 // Config must provide:
 //   config.socketio.host
 //   config.socketio.port
-
-var mock_server;
+//   config.socketio.listenip (optional)
 
 // Socket.io 0.6 doesn't handle multiple listeners. You can't listen
 // to multiple resources at a time. Monkeypatch to fix it. Ugly.
