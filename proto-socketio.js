@@ -20,9 +20,11 @@ socketio.Listener.prototype.check = function(req, res, httpUpgrade, head){
     var parts, cn;
     var m = url.parse(req.url).pathname.match(/[/]([^/]*)(.*)/);
     // Let's save resource somewhere.
-    req.token = m[1];
+    req.connection.token = m[1];
 
-    if (req.token) {
+    console.log(req.method, req.url, req.connection.token);
+
+    if (req.connection.token) {
         parts = m[2].slice(1).split('/');
         if (this._serveClient(parts.join('/'), req, res)) return true;
         if (transports.indexOf(parts[0]) === -1) return false;
@@ -67,7 +69,7 @@ var get_url = function(token) {
 function Protocol(io) {
     var that = this;
     this.io = io;
-    this.token = io.request.token;
+    this.token = io.request.connection.token;
     this.io.removeAllListeners('message');
     this.io.removeAllListeners('disconnect');
 
@@ -94,10 +96,11 @@ Protocol.prototype.disconnect = function() {
     };
 
 var on_connection = function(io) {
-    console.log(' [+] Connection  ', io.request.token);
+    var token = io.connection.token;
+    console.log(' [+] Connection  ', token);
     io.on('message', function (raw_msg) {
               var msg = JSON.parse(raw_msg);
-              connections.open_connection(msg, io.request.token,
+              connections.open_connection(msg, token,
                                           new Protocol(io));
           });
 };
