@@ -1,10 +1,9 @@
 var $ = require('jquery');
 var utils = require('./utils');
 
-var queues = {};
+var queues = exports.queues = {};
 
-function Queue() {
-    this.counter = 0;
+var Queue = exports.Queue = function() {
     this.queue = [];
     this.push_handles = {};
     this.pull_keys = [];
@@ -12,9 +11,9 @@ function Queue() {
 };
 
 Queue.prototype = {
-    'push_handle_add': function() {
+    'push_handle_add': function(do_send) {
         var rhandle = utils.random_string(128);
-        this.push_handles[rhandle] = true;
+        this.push_handles[rhandle] = do_send;
         return rhandle;
     },
     'push_handle_del': function(rhandle) {
@@ -56,30 +55,40 @@ Queue.prototype = {
     }
 };
 
-exports.connect_push = function(rname) {
+Queue.connect_push = function(rname, opts, do_send) {
     if (!(rname in queues)) {
         queues[rname] = new Queue();
     }
-    return queues[rname].push_handle_add();
+    return queues[rname].push_handle_add(do_send);
 };
-exports.disconnect_push = function(rname, opts, rhandle) {
+
+Queue.disconnect_push = function(rname, opts, rhandle) {
     if (queues[rname].push_handle_del(rhandle) === true) {
         delete queues[rname];
     };
 };
-exports.publish_push = function(rname, opts, rhandle, msg) {
+
+Queue.publish_push = function(rname, opts, rhandle, msg) {
     queues[rname].push(msg);
 };
 
-exports.connect_pull = function(rname, opts, do_send) {
+exports.connect_push = Queue.connect_push;
+exports.disconnect_push = Queue.disconnect_push;
+exports.publish_push = Queue.publish_push;
+
+Queue.connect_pull = function(rname, opts, do_send) {
     if (!(rname in queues)) {
         queues[rname] = new Queue();
     }
     return queues[rname].pull_handle_add(do_send);
 };
-exports.disconnect_pull = function(rname, opts, rhandle) {
+Queue.disconnect_pull = function(rname, opts, rhandle) {
     if (queues[rname].pull_handle_del(rhandle) === true) {
         delete queues[rname];
     };
 };
-exports.publish_pull = function() {};
+Queue.publish_pull = function() {};
+
+exports.connect_pull = Queue.connect_pull;
+exports.disconnect_pull = Queue.disconnect_pull;
+exports.publish_pull = Queue.publish_pull;
