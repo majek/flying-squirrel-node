@@ -14,6 +14,9 @@ exports.connect_sub = function(rname, opts, do_send) {
 };
 exports.disconnect_sub = function(rname, opts, rhandle) {
     delete exchanges[rname][rhandle];
+    if (utils.object_empty(exchanges[rname])) {
+        delete exchanges[rname];
+    }
 };
 exports.publish_sub = function(rname, opts, rhandle, msg) {};
 

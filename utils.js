@@ -96,3 +96,27 @@ function read_uint32(buffer, offset, endian) {
     }
     return val;
 }
+
+exports.object_empty = function(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+    return true;
+};
+
+exports.array_skip = function(arr, obj) {
+    var i = arr.indexOf(obj);
+    if (i == -1) {
+        throw "Object not found in array.";
+    }
+    var a = arr.slice(0, i);
+    var b = arr.slice(i+1);
+    return a.concat( b );
+};
+
+exports.array_rotate = function(arr) {
+    var obj = arr.shift();
+    arr.push(obj);
+    return obj;
+}
