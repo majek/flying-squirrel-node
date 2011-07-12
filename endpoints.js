@@ -62,7 +62,7 @@ app.get_endpoint = function(req) {
 };
 
 app.put_endpoint = function(req, res, data) {
-    if (!$.type(data) === "object" || !'definition' in data) {
+    if (!$.type(data) === "object" || !('definition' in data)) {
         throw {status: 500,
                message: "Endpoint definition expected."};
     }

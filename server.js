@@ -12,8 +12,8 @@ var config = require('./config');
 //   config.server.port
 //   config.server.listenip (optional)
 
-var endpoint_path = [/[/]endpoints[/]([^/]*)[/]?$/, 'endpoint_name'];
-var ticket_path   = [/[/]endpoints[/]([^/]*)[/]tickets[/]?$/, 'endpoint_name'];
+var endpoint_path = [/[/]endpoints[/]([^/]+)[/]?$/, 'endpoint_name'];
+var ticket_path   = [/[/]endpoints[/]([^/]+)[/]tickets[/]?$/, 'endpoint_name'];
 
 var dispatcher = [
     ['GET',  /[/]endpoints[/]?$/, ['list_endpoints', 'expose_endpoint']],

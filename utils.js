@@ -55,7 +55,7 @@ exports.validate_ticket = function(ticket, key) {
 }
 
 function sha_mac(key, data) {
-    return new Buffer(crypto .createHmac('sha1', key)
+    return new Buffer(crypto.createHmac('sha1', key)
                       .update(data)
                       .digest('base64'), 'base64');
 }
@@ -120,3 +120,13 @@ exports.array_rotate = function(arr) {
     arr.push(obj);
     return obj;
 }
+
+function hash_md5(data) {
+    return new Buffer(crypto.createHash('md5')
+                      .update(data)
+                      .digest('base64'), 'base64');
+}
+
+exports.safe_md5 = function(key) {
+    return safe_encode(hash_md5(key));
+};

@@ -5,7 +5,8 @@ var $ = require('jquery');
 var app = exports.app = {};
 
 app.expose_json = function(req, res, content) {
-    res.writeHead(200, {'Content-Type': 'application/json'});
+    var headers = {'Content-Type': 'application/json'};
+    res.writeHead(200, headers);
     res.end(JSON.stringify(content, null, 4) + '\n');
 };
 

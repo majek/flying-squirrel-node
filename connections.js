@@ -21,7 +21,7 @@ function Connection(endpoint, proto, identity) {
                    rname, opts, function(msg) {
                        msg.channel = channel_name;
                        that.proto.send(msg);
-                                                 });
+                   });
                that.channels[channel_name] = {
                    'destruct': function() {
                        resources['disconnect_' + rtype](rname, opts, rhandle);
