@@ -1,8 +1,10 @@
 {
 	"name": "flying-squirrel-node",
+    "url": "https://github.com/majek/flying-squirrel-node",
 	"version": "0.0.1",
-        "dependencies": {
-                "socket.io": "0.6.18",
-                "jquery": "1.5.1"
-        }
+    "dependencies": {
+                    "socket.io": "0.6.18",
+                    "jquery": "1.5.1"
+                    },
+    "engines": ["node >= 4.9.0"]
 }
